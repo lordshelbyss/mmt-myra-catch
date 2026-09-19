@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myra Catch · MMT Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-2: #12263c;
+      --card-dark: #162c45;
+      --yellow: #f5c400;
+      --mmt-red: #e31e24;
+      --mmt-blue: #2d7dff;
+      --mmt-blue-2: #4aa3ff;
+      --cta: linear-gradient(90deg, #1e6fff 0%, #3d9bff 100%);
+      --gray: #f3f4f6;
+      --gray-2: #eef0f4;
+      --line: #e6e8ee;
+      --text: #111827;
+      --muted: #6b7280;
+      --label: #8b919a;
+      --myra: #5b7cff;
+      --wa: #075e54;
+      --wa-bg: #efe7dd;
+      --phone-w: 390px;
+      --phone-h: 844px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", sans-serif;
+      background: var(--navy);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100%;
+    }
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 40%, #16324f 0%, var(--navy) 70%);
+      position: relative;
+    }
+    .nav-fab {
+      position: absolute;
+      top: 50%;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--card-dark);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .nav-fab.prev { left: 24px; }
+    .nav-fab.next { right: 24px; }
+    .screen-label {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #a9b6c6;
+      letter-spacing: 0.04em;
+    }
+
+    .phone-wrap {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      transform-origin: center center;
+    }
+    @media (max-height: 900px), (max-width: 520px) {
+      .phone-wrap {
+        transform: scale(min(calc((100vh - 48px) / 844), calc((100vw - 96px) / 390)));
+      }
+    }
+    .phone {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      background: #000;
+      border-radius: 46px;
+      padding: 10px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.45);
+      position: relative;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      color: var(--text);
+    }
+    .notch {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 118px;
+      height: 28px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 50;
+    }
+    .sb {
+      height: 48px;
+      padding: 14px 22px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      position: relative;
+      z-index: 4;
+    }
+    .sb.light { color: #fff; }
+    .sb.dark { color: #111; }
+    .sb-icons { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+    .sig { display: flex; gap: 2px; align-items: flex-end; height: 10px; }
+    .sig i { width: 3px; background: currentColor; display: block; border-radius: 1px; }
+    .bat { width: 22px; height: 10px; border: 1.5px solid currentColor; border-radius: 2px; position: relative; }
+    .bat::after { content: ""; position: absolute; right: -4px; top: 2px; width: 2px; height: 4px; background: currentColor; border-radius: 0 1px 1px 0; }
+    .bat b { display: block; height: 100%; width: 70%; background: currentColor; }
+    .screen { display: none; height: 100%; position: relative; }
+    .screen.on { display: flex; flex-direction: column; }
+
+    /* Instagram */
+    .ig {
+      background: #0b0b0b;
+      color: #fff;
+    }
+    .ig-video {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0.55) 100%),
+        url("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80") center/cover;
+    }
+    .ig-top {
+      position: relative;
+      z-index: 2;
+      padding: 8px 16px 0;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+    }
+    .ig-rail {
+      position: absolute;
+      right: 12px;
+      bottom: 158px;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    .ig-ico {
+      width: 44px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ig-ico .glyph {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin: 0 auto 4px;
+    }
+    .ig-ico.pulse .glyph {
+      outline: 2px solid #fff;
+      box-shadow: 0 0 0 6px rgba(45,125,255,0.35);
+      background: rgba(45,125,255,0.25);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 6px rgba(45,125,255,0.25); }
+      50% { box-shadow: 0 0 0 10px rgba(45,125,255,0.08); }
+    }
+    .ig-meta {
+      position: absolute;
+      left: 16px;
+      right: 78px;
+      bottom: 32px;
+      z-index: 3;
+    }
+    .ig-user { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .av {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .ig-cap { font-size: 13px; line-height: 1.4; color: #f3f4f6; }
+    .ig-audio { margin-top: 8px; font-size: 12px; opacity: 0.85; }
+
+    /* Share sheet */
+    .share-bg {
+      background: #111;
+    }
+    .share-bg .ig-video { filter: blur(8px) brightness(0.45); }
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: #f2f2f7;
+      border-radius: 18px 18px 0 0;
+      padding: 8px 0 18px;
+      z-index: 5;
+      color: #111;
+    }
+    .grab { width: 36px; height: 5px; background: #c7c7cc; border-radius: 4px; margin: 6px auto 10px; }
+    .sheet h3 { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .share-row {
+      display: flex; gap: 14px; overflow: hidden; padding: 0 16px 14px;
+    }
+    .share-app { width: 64px; text-align: center; font-size: 10px; color: #333; }
+    .share-app .icon {
+      width: 54px; height: 54px; border-radius: 16px;
+      margin: 0 auto 6px; display: grid; place-items: center;
+      font-weight: 800; color: #fff; font-size: 13px;
+    }
+    .mmt-share {
+      margin: 0 16px 12px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border: 1.5px solid #2d7dff;
+      box-shadow: 0 0 0 4px rgba(45,125,255,0.12);
+    }
+    .mmt-logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: var(--mmt-red); color: #fff;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 11px; letter-spacing: -0.04em;
+      flex-shrink: 0;
+    }
+    .mmt-share b { display: block; font-size: 14px; }
+    .mmt-share span { font-size: 11px; color: var(--muted); }
+    .sheet-actions { background: #fff; margin: 0 16px; border-radius: 12px; }
+    .sheet-actions div {
+      padding: 13px 16px; font-size: 15px; border-bottom: 1px solid #eee;
+    }
+    .sheet-actions div:last-child { border: 0; color: #007aff; text-align: center; }
+
+    /* MMT chrome */
+    .mmt { background: #fff; }
+    .mmt-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px 8px;
+      font-weight: 700; font-size: 17px;
+    }
+    .mmt-head .side { width: 36px; height: 36px; display: grid; place-items: center; color: #111; font-size: 18px; cursor: pointer; }
+    .scroll { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+    .composer {
+      padding: 10px 16px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 18%);
+    }
+    .ask {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 14px 16px 12px;
+      box-shadow: 0 -8px 24px rgba(17,24,39,0.04);
+    }
+    .ask .ph { color: #9aa0a8; font-size: 15px; margin-bottom: 10px; }
+    .ask-row { display: flex; gap: 8px; }
+    .chip {
+      border: 1.5px solid #dbe4f5;
+      background: #fff;
+      color: var(--mmt-blue);
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip.ghost { color: #6b7280; border-color: #e5e7eb; margin-left: auto; }
+
+    .myra { color: var(--myra); font-weight: 700; font-size: 15px; margin: 10px 0 8px; }
+    .bubble {
+      background: #eef0f8;
+      align-self: flex-end;
+      margin-left: auto;
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 16px 16px 6px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .work {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+    }
+    .work-h { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+    .nested {
+      background: #f7f8fb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 8px;
+    }
+    .nested b { display: block; font-size: 13px; margin-bottom: 4px; }
+    .nested p { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .spark { color: var(--myra); }
+
+    .video-chip {
+      display: flex; gap: 10px; align-items: center;
+      background: #f3f4f6;
+      border-radius: 14px;
+      padding: 8px;
+      margin: 8px 0 12px;
+    }
+    .thumb {
+      width: 54px; height: 72px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+      background: url("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=300&q=80") center/cover;
+      position: relative;
+    }
+    .thumb::after {
+      content: "▶";
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      color: #fff; font-size: 12px;
+      background: rgba(0,0,0,0.25);
+    }
+    .video-chip b { display: block; font-size: 13px; }
+    .video-chip span { font-size: 11px; color: var(--muted); }
+
+    .cta {
+      width: 100%;
+      border: 0;
+      border-radius: 22px;
+      padding: 14px;
+      background: var(--cta);
+      color: #fff;
+      font: 800 15px Inter, sans-serif;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .cta.outline {
+      background: #fff;
+      color: var(--mmt-blue);
+      border: 1.5px solid #cfe0ff;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+    .ghost-btn {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--mmt-blue);
+      font: 700 13px Inter, sans-serif;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--label);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tile {
+      background: var(--gray);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .tile .v { font-size: 15px; font-weight: 800; line-height: 1.25; }
+    .tile .s { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .day {
+      display: flex; gap: 10px; margin-bottom: 12px;
+    }
+    .day-n {
+      width: 42px; flex-shrink: 0;
+      background: #eef4ff; color: var(--mmt-blue);
+      border-radius: 12px; text-align: center;
+      padding: 8px 0;
+      font-weight: 800; font-size: 11px; line-height: 1.2;
+    }
+    .day-body { flex: 1; }
+    .day-body b { font-size: 13px; display: block; margin-bottom: 2px; }
+    .day-body p { font-size: 12px; color: var(--muted); }
+
+    .price-bar {
+      background: #f3f8ff;
+      border: 1px solid #d7e6ff;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 8px 0 12px;
+    }
+    .price-bar b { font-size: 18px; }
+    .ok { color: #12805a; font-size: 12px; font-weight: 700; }
+
+    /* WhatsApp */
+    .wa { background: var(--wa-bg); }
+    .wa-head {
+      background: var(--wa);
+      color: #fff;
+      padding: 0 12px 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wa-head .av { width: 36px; height: 36px; }
+    .wa-head b { font-size: 15px; display: block; }
+    .wa-head span { font-size: 11px; opacity: 0.85; }
+    .wa-msg {
+      max-width: 82%;
+      background: #fff;
+      border-radius: 8px 8px 8px 2px;
+      padding: 8px 10px;
+      font-size: 13px;
+      margin: 8px 12px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+    }
+    .wa-msg.me {
+      margin-left: auto;
+      background: #d9fdd3;
+      border-radius: 8px 8px 2px 8px;
+    }
+    .wa-time { font-size: 10px; color: #667781; text-align: right; margin-top: 4px; }
+    .trip-card {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 12px 8px auto;
+      width: 78%;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+    }
+    .trip-card .cover {
+      height: 92px;
+      background: url("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80") center/cover;
+    }
+    .trip-card .body { padding: 10px; }
+    .trip-card .k { color: var(--mmt-red); font-size: 10px; font-weight: 800; letter-spacing: 0.08em; }
+    .trip-card b { display: block; font-size: 14px; margin: 2px 0 4px; }
+    .trip-card p { font-size: 12px; color: var(--muted); }
+    .open-mmt {
+      margin-top: 8px;
+      background: var(--cta);
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .members { display: flex; align-items: center; }
+    .members .av { margin-right: -8px; border: 2px solid #fff; width: 28px; height: 28px; font-size: 10px; }
+    .tabs {
+      display: flex; gap: 4px; padding: 0 12px 10px;
+    }
+    .tab {
+      flex: 1; text-align: center;
+      padding: 8px 0;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+      background: var(--gray); color: #4b5563;
+      cursor: pointer;
+    }
+    .tab.on { background: var(--mmt-blue); color: #fff; }
+
+    .date-card {
+      background: var(--gray);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1.5px solid transparent;
+    }
+    .date-card.best { border-color: #2d7dff; background: #f3f8ff; }
+    .date-card .top { display: flex; justify-content: space-between; align-items: baseline; }
+    .why { font-size: 11px; color: var(--muted); margin: 4px 0 8px; }
+    .bar {
+      height: 8px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin: 8px 0;
+    }
+    .bar > span { display: block; height: 100%; background: var(--cta); }
+    .votes { display: flex; gap: 6px; margin-top: 8px; }
+    .vote {
+      flex: 1; text-align: center;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      border-radius: 10px;
+      padding: 7px 0;
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+    }
+    .vote.yes.on { background: #d1fae5; border-color: #10b981; color: #065f46; }
+    .vote.maybe.on { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+    .vote.no.on { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+
+    .chat-sys {
+      text-align: center; font-size: 11px; color: #9aa0a8; margin: 8px 0;
+    }
+    .chat-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .chat-b {
+      background: var(--gray);
+      border-radius: 12px 12px 12px 4px;
+      padding: 8px 10px;
+      font-size: 13px; line-height: 1.35;
+    }
+    .chat-b b { display: block; font-size: 11px; color: var(--myra); margin-bottom: 2px; }
+
+    .home-ind {
+      position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 5px; background: #111; border-radius: 4px; z-index: 40;
+    }
+    .ig .home-ind, .share-bg .home-ind, .wa .home-ind { background: #fff; opacity: 0.85; }
+
+    .orb {
+      position: absolute; right: 16px; bottom: 86px; z-index: 8;
+      width: 64px; height: 64px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #9ad8ff, #4b7cff 45%, #7a5bff);
+      display: grid; place-items: center; color: #fff; font-size: 22px;
+      box-shadow: 0 8px 20px rgba(75,124,255,0.35);
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--card-dark);
+      color: var(--yellow);
+      font-size: 10px; font-weight: 700;
+      padding: 4px 8px; border-radius: 999px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main class="stage" id="stage">
+      <button class="nav-fab prev" onclick="step(-1)" aria-label="Previous screen">‹</button>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen" id="phone"></div>
+          <div class="notch"></div>
+        </div>
+      </div>
+      <button class="nav-fab next" onclick="step(1)" aria-label="Next screen">›</button>
+      <div class="screen-label" id="label"></div>
+    </main>
+  </div>
+
+  <template id="tpl-f1-reel">
+    <div class="screen ig on">
+      <div class="ig-video"></div>
+      <div class="sb light"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="ig-top"><span>Reels</span><span>⌕</span></div>
+      <div class="ig-rail">
+        <div class="ig-ico"><div class="glyph">♡</div>214k</div>
+        <div class="ig-ico"><div class="glyph">💬</div>1,102</div>
+        <div class="ig-ico pulse" onclick="go('f1-share')"><div class="glyph">↗</div>Share</div>
+        <div class="ig-ico"><div class="glyph">🔖</div></div>
+        <div class="ig-ico"><div class="glyph" style="border:2px solid #fff;border-radius:50%;font-size:10px">♪</div></div>
+      </div>
+      <div class="ig-meta">
+        <div class="ig-user">
+          <div class="av" style="background:#c45c26">MW</div>
+          <b>meera.walks</b>
+          <span style="background:#fff;color:#111;font-size:11px;padding:3px 8px;border-radius:8px;font-weight:700">Follow</span>
+        </div>
+        <div class="ig-cap">Spiti in 20 seconds. Chandratal at 4,300m, then Key Monastery. Who’s in for October? 🏔<br><span style="opacity:.8">📍 Spiti Valley</span></div>
+        <div class="ig-audio">♪ original audio · meera.walks</div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-share">
+    <div class="screen share-bg on">
+      <div class="ig-video"></div>
+      <div class="sb light"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3>Send to</h3>
+        <div class="share-row">
+          <div class="share-app"><div class="icon" style="background:#25d366">WA</div>Aarav</div>
+          <div class="share-app"><div class="icon" style="background:#007aff">Me</div>Diya</div>
+          <div class="share-app"><div class="icon" style="background:#34c759">↑</div>Stories</div>
+          <div class="share-app"><div class="icon" style="background:#111">⌘</div>Copy</div>
+        </div>
+        <div class="mmt-share" onclick="go('f1-context')">
+          <div class="mmt-logo">MMT</div>
+          <div>
+            <b>Plan this trip</b>
+            <span>Open in MakeMyTrip · Myra keeps the Reel</span>
+          </div>
+        </div>
+        <div class="sheet-actions">
+          <div>Add to story</div>
+          <div>Save</div>
+          <div onclick="go('f1-reel')">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-context">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f1-share')">✕</div>
+        <div style="font-size:13px;color:#6b7280;font-weight:600">Myra</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div class="video-chip">
+          <div class="thumb"></div>
+          <div>
+            <b>Spiti in 20 seconds</b>
+            <span>@meera.walks · Instagram Reel<br>Attached as context for Myra</span>
+          </div>
+        </div>
+        <div class="bubble">Plan a trip from this Reel</div>
+        <div class="myra">Myra ✦</div>
+        <div class="work">
+          <div class="work-h"><span><span class="spark">✦</span> I’ve got the Reel</span></div>
+          <div class="nested">
+            <b>Using the video as context</b>
+            <p>I won’t search “Spiti packages”. I’ll reconstruct what is actually in this clip, then check weather, duration and a realistic budget from Delhi.</p>
+          </div>
+        </div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f1-process')">CONTINUE</button>
+        <div class="ask" style="margin-top:10px">
+          <div class="ph">Ask me anything</div>
+          <div class="ask-row">
+            <span class="chip">📍 Plan my itinerary</span>
+            <span class="chip ghost">🎙 Speak</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-process">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f1-context')">✕</div>
+        <div style="font-size:13px;color:#6b7280;font-weight:600">Myra</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div class="bubble">Plan a trip from this Reel</div>
+        <div class="myra">Myra ✦</div>
+        <div class="work">
+          <div class="work-h"><span><span class="spark">✦</span> Working on your request…</span><span>⌃</span></div>
+          <div class="nested" id="p1"><b>Watching the Reel…</b><p>Reading frames and audio — not the caption alone.</p></div>
+          <div class="nested" id="p2" style="opacity:.35"><b>Pinning the places…</b><p>Chandratal, Key Monastery, Kaza basin.</p></div>
+          <div class="nested" id="p3" style="opacity:.35"><b>Checking weather & prices…</b><p>Roads, season window, Delhi fares.</p></div>
+          <div class="nested" id="p4" style="opacity:.35"><b>Planning your trip…</b><p>Shaping a day-wise plan so it feels coherent, not a random list.</p></div>
+        </div>
+      </div>
+      <div class="composer">
+        <div class="ask">
+          <div class="ph">Ask me anything</div>
+          <div class="ask-row">
+            <span class="chip">📍 Plan my itinerary</span>
+            <span class="chip ghost">🎙 Speak</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-extract">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f1-process')">‹</div>
+        <div>Caught from the Reel</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div class="video-chip">
+          <div class="thumb"></div>
+          <div><b>4 places in this clip</b><span>3 mapped · 1 needs a pin</span></div>
+        </div>
+        <div class="grid2">
+          <div class="tile">
+            <div class="label">Place</div>
+            <div class="v">Spiti Valley</div>
+            <div class="s">Himachal · via Manali</div>
+          </div>
+          <div class="tile">
+            <div class="label">Best weather</div>
+            <div class="v">Jun–Sep</div>
+            <div class="s">Last window: early Oct</div>
+          </div>
+          <div class="tile">
+            <div class="label">Ideal duration</div>
+            <div class="v">6 days</div>
+            <div class="s">5 nights · Delhi return</div>
+          </div>
+          <div class="tile">
+            <div class="label">Budget / person</div>
+            <div class="v">₹16,400</div>
+            <div class="s">Inside a ₹18,000 cap</div>
+          </div>
+        </div>
+        <div class="tile" style="margin-top:10px">
+          <div class="label">In the video</div>
+          <p style="font-size:13px;line-height:1.45;margin-top:4px">Chandratal — mapped<br>Key Monastery — mapped<br>Kaza homestay belt — bookable<br>“Secret lake” — needs a pin, not guessed</p>
+        </div>
+        <div class="tile" style="margin-top:10px">
+          <div class="label">Your usual setup</div>
+          <div class="v" style="font-size:14px">6 friends · from Delhi · Economy</div>
+          <div class="s">Pulled from your MMT profile. Change anytime.</div>
+        </div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f1-plan')">BUILD THIS TRIP</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-plan">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f1-extract')">‹</div>
+        <div>Riya’s Spiti</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div class="myra">Myra ✦</div>
+        <p style="font-size:13px;color:#4b5563;margin-bottom:12px">A 6-day loop that actually follows the Reel — Volvo in, Chandratal, Key, homestay in Kaza. Dates left open so the group can vote.</p>
+        <div class="price-bar">
+          <div class="label">Live cart · per person</div>
+          <b>₹16,400</b>
+          <div class="ok">₹1,600 under your ₹18,000 cap</div>
+        </div>
+        <div class="day"><div class="day-n">DAY<br>1</div><div class="day-body"><b>Delhi → Manali</b><p>Overnight Volvo · 14h · ₹1,400</p></div></div>
+        <div class="day"><div class="day-n">DAY<br>2</div><div class="day-body"><b>Manali → Kaza</b><p>Shared tempo · homestay check-in</p></div></div>
+        <div class="day"><div class="day-n">DAY<br>3</div><div class="day-body"><b>Key Monastery + Kaza</b><p>The monastery from the Reel · cafe stop</p></div></div>
+        <div class="day"><div class="day-n">DAY<br>4</div><div class="day-body"><b>Chandratal</b><p>Mapped lake · day run · back to Kaza</p></div></div>
+        <div class="day"><div class="day-n">DAY<br>5–6</div><div class="day-body"><b>Return via Manali</b><p>Buffer day + Volvo to Delhi</p></div></div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f2-share')">SHARE WITH GROUP</button>
+        <button class="ghost-btn">Tweak stays or budget</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-share">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f1-plan')">‹</div>
+        <div>Share trip</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div class="tile" style="padding:0;overflow:hidden;margin-bottom:12px">
+          <div style="height:110px;background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80') center/cover"></div>
+          <div style="padding:12px">
+            <div class="label">Trip object</div>
+            <div class="v">Riya’s Spiti</div>
+            <div class="s">6 people · dates unlocked · ₹18,000 cap</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:#4b5563;margin-bottom:12px">WhatsApp stays the invite. MakeMyTrip becomes the place they decide — not another 40-message thread.</p>
+        <div class="mmt-share" style="margin:0 0 10px" onclick="go('f2-wa')">
+          <div class="icon" style="width:42px;height:42px;border-radius:12px;background:#25d366;display:grid;place-items:center;color:#fff;font-weight:800">WA</div>
+          <div><b>WhatsApp</b><span>Send trip link to the group</span></div>
+        </div>
+        <div class="tile" style="display:flex;gap:10px;align-items:center">
+          <div class="mmt-logo">MMT</div>
+          <div><b style="font-size:13px">Copy trip link</b><div class="s">mmt.in/trip/spiti-riya</div></div>
+        </div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f2-wa')">SEND ON WHATSAPP</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-wa">
+    <div class="screen wa on">
+      <div class="sb light" style="background:#075e54"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="wa-head">
+        <span onclick="go('f2-share')" style="cursor:pointer">‹</span>
+        <div class="av" style="background:#0d7377">BH</div>
+        <div><b>NCR weekend gang</b><span>you, Aarav, Meera, Kabir, Diya, Ishaan</span></div>
+      </div>
+      <div class="scroll" style="padding:8px 0 20px">
+        <div class="wa-msg">guys the Spiti reel is actually insane. we have to go before roads close</div>
+        <div class="wa-msg me">I dropped it into Myra. Vote dates here, stop the 40-msg thread 😭<div class="wa-time">9:06</div></div>
+        <div class="trip-card">
+          <div class="cover"></div>
+          <div class="body">
+            <div class="k">MAKEMYTRIP · TRIP</div>
+            <b>Riya’s Spiti</b>
+            <p>6 friends · Jun–Sep window · ₹16,400 pp<br>Vote on dates to lock the Volvo</p>
+            <div class="open-mmt" onclick="go('f2-join')">Open in MakeMyTrip</div>
+          </div>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-join">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f2-wa')">✕</div>
+        <div>Join trip</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll">
+        <div style="height:140px;border-radius:16px;overflow:hidden;background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80') center/cover;margin-bottom:12px"></div>
+        <div class="v" style="font-size:22px">Riya’s Spiti</div>
+        <p style="color:var(--muted);font-size:13px;margin:6px 0 12px">You’re joining as Aarav. Dates are the decision. Plan and budget are already on the trip.</p>
+        <div class="members" style="margin-bottom:14px">
+          <div class="av" style="background:#5b7cff">R</div>
+          <div class="av" style="background:#0d7377">A</div>
+          <div class="av" style="background:#c45c26">M</div>
+          <div class="av" style="background:#7c3aed">K</div>
+          <div class="av" style="background:#db2777">D</div>
+          <div class="av" style="background:#2563eb">I</div>
+          <span style="margin-left:14px;font-size:12px;color:var(--muted)">Riya invited you · 5 others</span>
+        </div>
+        <div class="grid2">
+          <div class="tile"><div class="label">From</div><div class="v">Delhi</div></div>
+          <div class="tile"><div class="label">Cap</div><div class="v">₹18,000</div></div>
+        </div>
+        <div class="tile" style="margin-top:10px">
+          <div class="label">Already decided</div>
+          <div class="v" style="font-size:14px">Spiti · 6 days · ₹16,400 pp</div>
+          <div class="s">Dates and the per-person cap still need a group vote.</div>
+        </div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f2-trip')">JOIN AND VOTE</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-trip">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f2-join')">‹</div>
+        <div>Riya’s Spiti</div>
+        <div class="side">···</div>
+      </div>
+      <div class="tabs">
+        <div class="tab on" data-tab="dates" onclick="tripTab('dates')">Dates</div>
+        <div class="tab" data-tab="budget" onclick="tripTab('budget')">Budget</div>
+        <div class="tab" data-tab="plan" onclick="tripTab('plan')">Plan</div>
+        <div class="tab" data-tab="chat" onclick="tripTab('chat')">Chat</div>
+      </div>
+      <div class="scroll" id="trip-body"></div>
+      <div class="composer" id="trip-cta"></div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-checkout">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="go('f2-trip')">‹</div>
+        <div>Checkout</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll" id="checkout-body"></div>
+      <div class="composer" id="checkout-cta"></div>
+    </div>
+  </template>
+
+  <template id="tpl-f2-done">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side"> </div>
+        <div>Booking confirmed</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll" style="text-align:center;padding-top:28px">
+        <div style="width:64px;height:64px;border-radius:50%;background:#d1fae5;color:#065f46;display:grid;place-items:center;margin:0 auto 14px;font-size:28px;font-weight:800">✓</div>
+        <div class="v" style="font-size:22px">Riya’s Spiti is booked</div>
+        <p style="color:var(--muted);font-size:13px;margin:8px 0 16px">6 friends · 9–14 Oct · Volvo hold + Kaza homestay</p>
+        <div class="tile" style="text-align:left">
+          <div class="label">Booking ID</div>
+          <div class="v">MMT-SPITI-9182</div>
+          <div class="s" id="done-amt">Paid from the group cart</div>
+        </div>
+        <div class="tile" style="text-align:left;margin-top:10px">
+          <div class="label">Each person pays</div>
+          <div class="v" id="done-pp">₹16,400</div>
+          <div class="s">Split later in the trip. You paid Aarav’s share now.</div>
+        </div>
+      </div>
+      <div class="composer">
+        <button class="cta" onclick="go('f2-trip')">BACK TO TRIP</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const FLOW1 = [
+      { id: "f1-reel", title: "Reel hits", say: "Start on Instagram — not on MMT. Inspiration is already happening here." },
+      { id: "f1-share", title: "Share → Plan this trip", say: "One new share-sheet action. Do not ask them to copy a link into ChatGPT." },
+      { id: "f1-context", title: "Reel attached to Myra", say: "The video is context, not a search query. Myra watches the clip." },
+      { id: "f1-process", title: "Myra extracts", say: "Place, season, duration, budget — the four things a vibe is missing." },
+      { id: "f1-extract", title: "Caught from the Reel", say: "Fail visibly on the untagged lake. That is how Expedia’s test broke." },
+      { id: "f1-plan", title: "Day-wise plan + cart", say: "A trip object, not a hotel list. Dates still unlocked for the group." },
+    ];
+    const FLOW2 = [
+      { id: "f2-share", title: "Share the trip object", say: "WhatsApp is distribution. MMT stays the system of record." },
+      { id: "f2-wa", title: "WhatsApp trip card", say: "The group already lives here. Give them a card, not another poll bot." },
+      { id: "f2-join", title: "Join the trip", say: "Each friend lands inside the same object — budget cap already on." },
+      { id: "f2-trip", title: "Vote dates & budget", say: "Calendars and ₹ cap are the two group fights. Then the cart can book." },
+      { id: "f2-checkout", title: "Checkout", say: "Booking happens on MMT, after the group has locked dates and a cap." },
+      { id: "f2-done", title: "Booked", say: "One cart, six people, attributable GMV — not a screenshot in WhatsApp." },
+    ];
+
+    let flow = 1;
+    let idx = 0;
+    let tripPane = "dates";
+    let locked = false;
+    let budgetLocked = false;
+    const votes = {
+      a: { R: "yes", A: "yes", M: "yes", K: "maybe", D: null, I: "yes" },
+      b: { R: "maybe", A: "no", M: "yes", K: "yes", D: null, I: "maybe" },
+      c: { R: "no", A: "yes", M: "maybe", K: "no", D: null, I: "yes" }
+    };
+    const budgetVotes = { R: "myra", A: "myra", M: "myra", K: "lean", D: null, I: "flex" };
+    const BUDGETS = [
+      { id: "lean", title: "₹12,500 pp", amt: 12500, why: "Dorm in Kaza · skip ATV · shared tempo" },
+      { id: "myra", title: "₹16,400 pp", amt: 16400, why: "Myra’s pick · homestay · matches the Reel", best: true },
+      { id: "flex", title: "₹18,000 pp", amt: 18000, why: "Keep the cap · add ATV + the cafe in the clip" },
+    ];
+    const you = "A";
+
+    function list() { return flow === 1 ? FLOW1 : FLOW2; }
+    function current() { return list()[idx]; }
+
+    function setFlow(n) {
+      flow = n;
+      idx = 0;
+      render();
+    }
+
+    function step(d) {
+      const L = list();
+      idx = Math.max(0, Math.min(L.length - 1, idx + d));
+      render();
+    }
+
+    function go(id) {
+      if (id.startsWith("f2")) flow = 2;
+      if (id.startsWith("f1")) flow = 1;
+      const L = list();
+      const i = L.findIndex(s => s.id === id);
+      if (i >= 0) idx = i;
+      render();
+    }
+
+    function mount(id, target) {
+      const tpl = document.getElementById("tpl-" + id);
+      target.innerHTML = "";
+      target.appendChild(tpl.content.cloneNode(true));
+    }
+
+    function render() {
+      const s = current();
+      mount(s.id, document.getElementById("phone"));
+      document.getElementById("label").textContent = `Flow ${flow} · ${idx+1}/${list().length} · ${s.title}`;
+      if (location.hash !== "#" + s.id) history.replaceState(null, "", "#" + s.id);
+      if (s.id === "f1-process") runProcess();
+      if (s.id === "f2-trip") initTrip();
+      if (s.id === "f2-checkout") initCheckout();
+      if (s.id === "f2-done") initDone();
+    }
+
+    function runProcess() {
+      const ids = ["p1","p2","p3","p4"];
+      ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.opacity = i === 0 ? "1" : "0.35";
+        setTimeout(() => {
+          if (!document.getElementById(id)) return;
+          el.style.opacity = "1";
+          if (i === 3) setTimeout(() => { if (current().id === "f1-process") go("f1-extract"); }, 700);
+        }, 700 * i);
+      });
+    }
+
+    function count(opt, kind) {
+      return Object.values(votes[opt]).filter(v => v === kind).length;
+    }
+    function winningBudget() {
+      let top = BUDGETS[1];
+      let n = -1;
+      BUDGETS.forEach((b) => {
+        const c = Object.values(budgetVotes).filter((v) => v === b.id).length;
+        if (c > n) { n = c; top = b; }
+      });
+      return top;
+    }
+
+    function inr(n) {
+      return "₹" + n.toLocaleString("en-IN");
+    }
+
+    function budgetCard(b) {
+      const n = Object.values(budgetVotes).filter((v) => v === b.id).length;
+      const mine = budgetVotes[you] === b.id;
+      const avatars = Object.entries(budgetVotes)
+        .filter(([, v]) => v === b.id)
+        .map(([k]) => `<div class="av" style="width:22px;height:22px;font-size:9px;background:${({R:'#5b7cff',A:'#0d7377',M:'#c45c26',K:'#7c3aed',D:'#db2777',I:'#2563eb'})[k]}">${k}</div>`)
+        .join("");
+      const isLocked = budgetLocked && winningBudget().id === b.id;
+      return `<div class="date-card ${b.best || isLocked ? "best" : ""}" ${budgetLocked ? "" : `onclick="castBudget('${b.id}')"`} style="${budgetLocked ? "" : "cursor:pointer"}">
+        <div class="top"><b>${b.title}</b><span style="font-size:12px;color:var(--mmt-blue);font-weight:700">${isLocked ? "Locked" : n+"/6"}</span></div>
+        <div class="why">${b.why}</div>
+        <div class="bar"><span style="width:${Math.round((n/6)*100)}%"></span></div>
+        <div class="members" style="margin:6px 0 4px">${avatars || '<span style="font-size:11px;color:#9aa0a8">No votes yet</span>'}</div>
+        ${budgetLocked ? `<p style="font-size:12px;color:#12805a;font-weight:700;margin-top:8px">${isLocked ? "Cap locked for the cart." : "Not selected"}</p>` : `<div class="votes">
+          <button class="vote yes ${mine?"on":""}" onclick="event.stopPropagation();castBudget('${b.id}')">${mine ? "Your vote" : "Vote this cap"}</button>
+        </div>`}
+      </div>`;
+    }
+
+    function dateCard(opt, title, why, best) {
+      const yes = count(opt, "yes");
+      const mine = votes[opt][you];
+      const isLocked = locked && best;
+      const avatars = Object.entries(votes[opt])
+        .filter(([, v]) => v === "yes")
+        .map(([k]) => `<div class="av" style="width:22px;height:22px;font-size:9px;background:${({R:'#5b7cff',A:'#0d7377',M:'#c45c26',K:'#7c3aed',D:'#db2777',I:'#2563eb'})[k]}">${k}</div>`)
+        .join("");
+      return `<div class="date-card ${best?"best":""}">
+        <div class="top"><b>${title}</b><span style="font-size:12px;color:var(--mmt-blue);font-weight:700">${isLocked ? "Locked" : yes+"/6 can go"}</span></div>
+        <div class="why">${why}</div>
+        <div class="bar"><span style="width:${Math.round((yes/6)*100)}%"></span></div>
+        <div class="members" style="margin:6px 0 4px">${avatars || '<span style="font-size:11px;color:#9aa0a8">No yes votes yet</span>'}</div>
+        ${locked ? `<p style="font-size:12px;color:#12805a;font-weight:700;margin-top:8px">${best ? "Group overlap. Volvo seats are holdable for 2 hours." : "Not selected"}</p>` : `<div class="votes">
+          <button class="vote yes ${mine==="yes"?"on":""}" onclick="cast('${opt}','yes')">Can go</button>
+          <button class="vote maybe ${mine==="maybe"?"on":""}" onclick="cast('${opt}','maybe')">Maybe</button>
+          <button class="vote no ${mine==="no"?"on":""}" onclick="cast('${opt}','no')">Can't</button>
+        </div>`}
+      </div>`;
+    }
+
+    function tripHTML() {
+      if (tripPane === "plan") {
+        const cap = winningBudget();
+        return `
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">${locked && budgetLocked ? "Dates and cap locked. Cart is live." : "Inherited from the Reel. Dates and ₹ cap still need a vote."}</p>
+          <div class="day"><div class="day-n">1</div><div class="day-body"><b>Delhi → Manali Volvo</b><p>₹1,400 pp · overnight</p></div></div>
+          <div class="day"><div class="day-n">2</div><div class="day-body"><b>Manali → Kaza homestay</b><p>Shared tempo · 2 rooms</p></div></div>
+          <div class="day"><div class="day-n">3</div><div class="day-body"><b>Key Monastery</b><p>From the Reel · mapped</p></div></div>
+          <div class="day"><div class="day-n">4</div><div class="day-body"><b>Chandratal</b><p>Day run · back to Kaza</p></div></div>
+          <div class="price-bar"><b>${inr(cap.amt)}</b> <span class="ok">pp · ${budgetLocked ? "group cap locked" : "leading vote"}</span></div>`;
+      }
+      if (tripPane === "chat") {
+        return `
+          <div class="chat-sys">Trip forum · not the WhatsApp pile-on</div>
+          <div class="chat-row"><div class="av" style="background:#5b7cff">R</div><div class="chat-b"><b>Riya</b>Locking a window once 5 people can go. Volvo seats go first.</div></div>
+          <div class="chat-sys">Aarav joined the trip</div>
+          <div class="chat-row"><div class="av" style="background:#c45c26">M</div><div class="chat-b"><b>Meera</b>Parents said yes if we don’t self-drive the Rohtang stretch.</div></div>
+          <div class="chat-row"><div class="av" style="background:#db2777">D</div><div class="chat-b"><b>Diya</b>Can we keep it under 15k? Hostel is fine, skip the ATV.</div></div>
+          <div class="chat-row"><div class="av" style="background:#0d7377">A</div><div class="chat-b"><b>You</b>Vote the cap in Budget — stop arguing it in chat.</div></div>`;
+      }
+      if (tripPane === "budget") {
+        return `
+          <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Second bottleneck. Myra extracted ₹16,400. The group still has to agree a cap — this is the poll, not a 40-message fight.</p>
+          ${BUDGETS.map(budgetCard).join("")}
+          <p style="font-size:11px;color:var(--muted)">${budgetLocked ? "Cap locked at "+inr(winningBudget().amt)+" pp." : "Diya hasn’t voted. One tap, not another WhatsApp poll."}</p>`;
+      }
+      return `
+        <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Myra suggested 3 windows from weather + cheapest Delhi departures. This is the bottleneck — not the hotel.</p>
+        ${dateCard("a","9–14 Oct · Fri–Wed","Best overlap · roads still open · Volvo ₹1,400", true)}
+        ${dateCard("b","16–21 Oct · Fri–Wed","Shoulder week · fares +12% · 2 maybes", false)}
+        ${dateCard("c","30 Oct–4 Nov · Fri–Wed","Colder nights · cheaper stays · weaker overlap", false)}
+        <p style="font-size:11px;color:var(--muted)">${locked ? "Dates locked. Next: lock a per-person cap." : "Diya hasn’t voted. Nudge from the trip, not a separate chat."}</p>`;
+    }
+
+    function canBook() { return locked && budgetLocked; }
+
+    function tripCta() {
+      const amt = inr(winningBudget().amt);
+      if (tripPane === "dates") {
+        if (!locked) return `<button class="cta" onclick="lockDates()">LOCK 9–14 OCT</button>`;
+        if (!budgetLocked) return `<button class="cta" onclick="tripTab('budget')">NEXT · VOTE BUDGET</button>`;
+        return `<button class="cta" onclick="openCheckout()">${"BOOK "+amt+" · 9–14 OCT"}</button>`;
+      }
+      if (tripPane === "budget") {
+        if (!locked) return `<button class="cta outline" onclick="tripTab('dates')">LOCK DATES FIRST</button>`;
+        if (!budgetLocked) return `<button class="cta" onclick="lockBudget()">LOCK ${amt} CAP</button>`;
+        return `<button class="cta" onclick="openCheckout()">BOOK ${amt}</button>`;
+      }
+      if (tripPane === "plan") {
+        if (!canBook()) return `<button class="cta outline" onclick="tripTab(${locked ? "'budget'" : "'dates'"})">${locked ? "VOTE BUDGET TO BOOK" : "VOTE DATES TO BOOK"}</button>`;
+        return `<button class="cta" onclick="openCheckout()">BOOK ${amt}</button>`;
+      }
+      return `<div class="ask"><div class="ph">Message the trip</div></div>`;
+    }
+
+    function initTrip() {
+      const body = document.getElementById("trip-body");
+      const cta = document.getElementById("trip-cta");
+      if (!body) return;
+      body.innerHTML = tripHTML();
+      cta.innerHTML = tripCta();
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === tripPane));
+    }
+
+    function tripTab(name) {
+      tripPane = name;
+      initTrip();
+    }
+
+    function cast(opt, kind) {
+      votes[opt][you] = kind;
+      initTrip();
+    }
+
+    function lockDates() {
+      locked = true;
+      tripPane = "budget";
+      initTrip();
+    }
+
+    function castBudget(id) {
+      budgetVotes[you] = id;
+      initTrip();
+    }
+
+    function lockBudget() {
+      budgetLocked = true;
+      initTrip();
+    }
+
+    function openCheckout() {
+      if (!canBook()) {
+        tripPane = locked ? "budget" : "dates";
+        initTrip();
+        return;
+      }
+      go("f2-checkout");
+    }
+
+    function initCheckout() {
+      const cap = winningBudget();
+      const body = document.getElementById("checkout-body");
+      const cta = document.getElementById("checkout-cta");
+      if (!body) return;
+      body.innerHTML = `
+        <div class="tile" style="padding:0;overflow:hidden;margin-bottom:12px">
+          <div style="height:96px;background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80') center/cover"></div>
+          <div style="padding:12px">
+            <div class="label">Group cart</div>
+            <div class="v">Riya’s Spiti</div>
+            <div class="s">9–14 Oct · 6 travellers · Delhi origin</div>
+          </div>
+        </div>
+        <div class="day"><div class="day-n">1</div><div class="day-body"><b>Overnight Volvo</b><p>Delhi → Manali · ₹1,400</p></div></div>
+        <div class="day"><div class="day-n">2</div><div class="day-body"><b>Kaza homestay</b><p>5 nights · 2 rooms</p></div></div>
+        <div class="day"><div class="day-n">3</div><div class="day-body"><b>Key + Chandratal</b><p>Mapped from the Reel</p></div></div>
+        <div class="price-bar">
+          <div class="label">You pay now</div>
+          <b>${inr(cap.amt)}</b>
+          <div class="ok">Aarav’s share · group cap ${inr(cap.amt)}</div>
+        </div>
+        <p style="font-size:11px;color:var(--muted)">Others pay their share from the same trip object. Hold on Volvo seats: 2 hours.</p>`;
+      cta.innerHTML = `<button class="cta" onclick="go('f2-done')">PAY ${inr(cap.amt)}</button>`;
+    }
+
+    function initDone() {
+      const cap = winningBudget();
+      const pp = document.getElementById("done-pp");
+      const amt = document.getElementById("done-amt");
+      if (pp) pp.textContent = inr(cap.amt);
+      if (amt) amt.textContent = "Aarav’s share paid · others still in the trip";
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    });
+
+    (function bootFromHash() {
+      if (/tab=budget/.test(location.search)) tripPane = "budget";
+      if (/dates=1/.test(location.search)) locked = true;
+      if (/budgetlock=1/.test(location.search)) budgetLocked = true;
+      if (/locked=1/.test(location.search)) { locked = true; budgetLocked = true; }
+      const id = (location.hash || "").replace("#", "");
+      const all = FLOW1.concat(FLOW2);
+      const found = all.find(s => s.id === id);
+      if (found) {
+        flow = id.startsWith("f2") ? 2 : 1;
+        idx = list().findIndex(s => s.id === id);
+      }
+    })();
+
+    render();
+  </script>
+</body>
+</html>
