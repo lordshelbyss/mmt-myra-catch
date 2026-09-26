@@ -933,7 +933,7 @@
     <div class="screen mmt on">
       <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
       <div class="mmt-head">
-        <div class="side"> </div>
+        <div class="side" onclick="backToTrip()">‹</div>
         <div>Booking confirmed</div>
         <div class="side">···</div>
       </div>
@@ -983,6 +983,22 @@
     let locked = false;
     let budgetLocked = false;
     let booked = false;
+    const BOOKED_KEY = "mmt-booked";
+
+    function rememberBooked() {
+      booked = true;
+      try { sessionStorage.setItem(BOOKED_KEY, "1"); } catch (e) {}
+    }
+
+    function forgetBooked() {
+      booked = false;
+      if (tripPane === "summary") tripPane = "dates";
+      try { sessionStorage.removeItem(BOOKED_KEY); } catch (e) {}
+    }
+
+    function restoreBooked() {
+      try { if (sessionStorage.getItem(BOOKED_KEY) === "1") booked = true; } catch (e) {}
+    }
     const ACTIVITIES = 6000;
     const STAYS = [
       { id: "hostel", title: "Dorm in Kaza", detail: "Shared bunk · skip the private room", cost: 3200, line: "Dorm check-in" },
@@ -1045,17 +1061,34 @@
       side = null;
       const L = list();
       idx = Math.max(0, Math.min(L.length - 1, idx + d));
+      if (current().id.startsWith("f1")) forgetBooked();
+      settleBookedScreen();
       render();
     }
 
     function go(id) {
       side = null;
+      if (id.startsWith("f1")) forgetBooked();
       if (id.startsWith("f2")) flow = 2;
       if (id.startsWith("f1")) flow = 1;
+      if (booked && (id === "f2-checkout" || id === "f2-join")) {
+        id = "f2-trip";
+        tripPane = "summary";
+      }
       const L = list();
       const i = L.findIndex(s => s.id === id);
       if (i >= 0) idx = i;
+      settleBookedScreen();
       render();
+    }
+
+    function settleBookedScreen() {
+      if (!booked) return;
+      const id = current().id;
+      if (id !== "f2-checkout" && id !== "f2-join") return;
+      const i = list().findIndex(s => s.id === "f2-trip");
+      if (i >= 0) idx = i;
+      tripPane = "summary";
     }
 
     function openTweak() {
@@ -1180,6 +1213,7 @@
     }
 
     function render() {
+      settleBookedScreen();
       const s = current();
       const screenId = side || s.id;
       mount(screenId, document.getElementById("phone"));
@@ -1386,7 +1420,7 @@
     }
 
     function backToTrip() {
-      booked = true;
+      rememberBooked();
       tripPane = "summary";
       go("f2-trip");
     }
@@ -1446,11 +1480,16 @@
           <div class="ok">Aarav’s share · group cap ${inr(cap.amt)}</div>
         </div>
         <p style="font-size:11px;color:var(--muted)">Others pay their share from the same trip object. Hold on ${t.short} seats: 2 hours.</p>`;
-      cta.innerHTML = `<button class="cta" onclick="go('f2-done')">PAY ${inr(cap.amt)}</button>`;
+      cta.innerHTML = `<button class="cta" onclick="payNow()">PAY ${inr(cap.amt)}</button>`;
+    }
+
+    function payNow() {
+      rememberBooked();
+      go("f2-done");
     }
 
     function initDone() {
-      booked = true;
+      rememberBooked();
       const cap = winningBudget();
       const pp = document.getElementById("done-pp");
       const amt = document.getElementById("done-amt");
@@ -1464,17 +1503,20 @@
     });
 
     (function bootFromHash() {
+      restoreBooked();
       if (/tab=budget/.test(location.search)) tripPane = "budget";
       if (/dates=1/.test(location.search)) locked = true;
       if (/budgetlock=1/.test(location.search)) budgetLocked = true;
       if (/locked=1/.test(location.search)) { locked = true; budgetLocked = true; }
       const id = (location.hash || "").replace("#", "");
+      if (!id || id.startsWith("f1")) forgetBooked();
       const all = FLOW1.concat(FLOW2);
       const found = all.find(s => s.id === id);
       if (found) {
         flow = id.startsWith("f2") ? 2 : 1;
         idx = list().findIndex(s => s.id === id);
       }
+      if (booked && (id === "f2-trip" || id === "f2-checkout" || id === "f2-join")) tripPane = "summary";
     })();
 
     syncGroupBudgets();
