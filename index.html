@@ -414,6 +414,44 @@
     }
     .price-bar b { font-size: 18px; }
     .ok { color: #12805a; font-size: 12px; font-weight: 700; }
+    .over { color: #b91c1c; font-size: 12px; font-weight: 700; }
+
+    .pick {
+      background: var(--gray);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+    }
+    .pick.on { border-color: #2d7dff; background: #f3f8ff; }
+    .pick .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .pick .top b { font-size: 14px; }
+    .pick .amt { font-size: 12px; font-weight: 800; color: var(--mmt-blue); white-space: nowrap; }
+    .pick .detail { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .cap-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .cap-chip {
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #111;
+    }
+    .cap-chip.on { border-color: #2d7dff; background: #f3f8ff; color: var(--mmt-blue); }
+    .stepper {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 14px;
+      padding: 6px; margin-bottom: 8px;
+    }
+    .stepper button {
+      width: 40px; height: 40px; border-radius: 12px; border: 0;
+      background: #eef4ff; color: var(--mmt-blue);
+      font-size: 22px; font-weight: 700; cursor: pointer;
+    }
+    .stepper b { font-size: 18px; }
 
     /* WhatsApp */
     .wa { background: var(--wa-bg); }
@@ -746,24 +784,24 @@
         <div>Riya’s Spiti</div>
         <div class="side">···</div>
       </div>
-      <div class="scroll">
-        <div class="myra">Myra ✦</div>
-        <p style="font-size:13px;color:#4b5563;margin-bottom:12px">A 6-day loop that actually follows the Reel — Volvo in, Chandratal, Key, homestay in Kaza. Dates left open so the group can vote.</p>
-        <div class="price-bar">
-          <div class="label">Live cart · per person</div>
-          <b>₹16,400</b>
-          <div class="ok">₹1,600 under your ₹18,000 cap</div>
-        </div>
-        <div class="day"><div class="day-n">DAY<br>1</div><div class="day-body"><b>Delhi → Manali</b><p>Overnight Volvo · 14h · ₹1,400</p></div></div>
-        <div class="day"><div class="day-n">DAY<br>2</div><div class="day-body"><b>Manali → Kaza</b><p>Shared tempo · homestay check-in</p></div></div>
-        <div class="day"><div class="day-n">DAY<br>3</div><div class="day-body"><b>Key Monastery + Kaza</b><p>The monastery from the Reel · cafe stop</p></div></div>
-        <div class="day"><div class="day-n">DAY<br>4</div><div class="day-body"><b>Chandratal</b><p>Mapped lake · day run · back to Kaza</p></div></div>
-        <div class="day"><div class="day-n">DAY<br>5–6</div><div class="day-body"><b>Return via Manali</b><p>Buffer day + Volvo to Delhi</p></div></div>
-      </div>
+      <div class="scroll" id="plan-body"></div>
       <div class="composer">
         <button class="cta" onclick="go('f2-share')">SHARE WITH GROUP</button>
-        <button class="ghost-btn">Tweak stays or budget</button>
+        <button class="ghost-btn" onclick="openTweak()">Tweak stays, travel or budget</button>
       </div>
+    </div>
+  </template>
+
+  <template id="tpl-f1-tweak">
+    <div class="screen mmt on">
+      <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
+      <div class="mmt-head">
+        <div class="side" onclick="closeTweak()">‹</div>
+        <div>Tweak the trip</div>
+        <div class="side">···</div>
+      </div>
+      <div class="scroll" id="tweak-body"></div>
+      <div class="composer" id="tweak-cta"></div>
     </div>
   </template>
 
@@ -781,7 +819,7 @@
           <div style="padding:12px">
             <div class="label">Trip object</div>
             <div class="v">Riya’s Spiti</div>
-            <div class="s">6 people · dates unlocked · ₹18,000 cap</div>
+            <div class="s" id="share-meta">6 people · dates unlocked · ₹18,000 cap</div>
           </div>
         </div>
         <p style="font-size:13px;color:#4b5563;margin-bottom:12px">WhatsApp stays the invite. MakeMyTrip becomes the place they decide — not another 40-message thread.</p>
@@ -816,7 +854,7 @@
           <div class="body">
             <div class="k">MAKEMYTRIP · TRIP</div>
             <b>Riya’s Spiti</b>
-            <p>6 friends · Jun–Sep window · ₹16,400 pp<br>Vote on dates to lock the Volvo</p>
+            <p id="wa-meta">6 friends · Jun–Sep window · ₹16,400 pp<br>Vote on dates to lock the Volvo</p>
             <div class="open-mmt" onclick="go('f2-join')">Open in MakeMyTrip</div>
           </div>
         </div>
@@ -848,11 +886,11 @@
         </div>
         <div class="grid2">
           <div class="tile"><div class="label">From</div><div class="v">Delhi</div></div>
-          <div class="tile"><div class="label">Cap</div><div class="v">₹18,000</div></div>
+          <div class="tile"><div class="label">Cap</div><div class="v" id="join-cap">₹18,000</div></div>
         </div>
         <div class="tile" style="margin-top:10px">
           <div class="label">Already decided</div>
-          <div class="v" style="font-size:14px">Spiti · 6 days · ₹16,400 pp</div>
+          <div class="v" style="font-size:14px" id="join-plan">Spiti · 6 days · ₹16,400 pp</div>
           <div class="s">Dates and the per-person cap still need a group vote.</div>
         </div>
       </div>
@@ -905,7 +943,7 @@
       <div class="scroll" style="text-align:center;padding-top:28px">
         <div style="width:64px;height:64px;border-radius:50%;background:#d1fae5;color:#065f46;display:grid;place-items:center;margin:0 auto 14px;font-size:28px;font-weight:800">✓</div>
         <div class="v" style="font-size:22px">Riya’s Spiti is booked</div>
-        <p style="color:var(--muted);font-size:13px;margin:8px 0 16px">6 friends · 9–14 Oct · Volvo hold + Kaza homestay</p>
+        <p id="done-sub" style="color:var(--muted);font-size:13px;margin:8px 0 16px">6 friends · 9–14 Oct · Volvo hold + Kaza homestay</p>
         <div class="tile" style="text-align:left">
           <div class="label">Booking ID</div>
           <div class="v">MMT-SPITI-9182</div>
@@ -943,9 +981,23 @@
 
     let flow = 1;
     let idx = 0;
+    let side = null;
     let tripPane = "dates";
     let locked = false;
     let budgetLocked = false;
+    const ACTIVITIES = 6000;
+    const STAYS = [
+      { id: "hostel", title: "Dorm in Kaza", detail: "Shared bunk · skip the private room", cost: 3200, line: "Dorm check-in" },
+      { id: "homestay", title: "Kaza homestay", detail: "2 rooms · the belt from the Reel", cost: 7200, line: "Homestay check-in" },
+      { id: "hotel", title: "Boutique hotel", detail: "Private heated room · Kaza", cost: 12800, line: "Hotel check-in" },
+    ];
+    const TRAVELS = [
+      { id: "volvo", title: "Volvo + tempo", detail: "Overnight bus · shared last mile", cost: 3200, short: "Volvo", d1t: "Delhi → Manali", d1d: "Overnight Volvo · 14h · ₹1,400", d2: "Shared tempo", d5t: "Return via Manali", d5d: "Buffer day + Volvo to Delhi" },
+      { id: "flight", title: "Flight + cab", detail: "Delhi → Bhuntar · private cab up", cost: 8400, short: "Flight", d1t: "Delhi → Bhuntar", d1d: "Morning flight · cab to Manali", d2: "Private cab", d5t: "Fly back via Bhuntar", d5d: "Buffer day + evening flight" },
+      { id: "drive", title: "Self-drive", detail: "SUV from Delhi · you set the pace", cost: 4500, short: "Self-drive", d1t: "Delhi → Manali", d1d: "Self-drive · overnight halt", d2: "You drive up", d5t: "Drive back to Delhi", d5d: "Buffer day + highway return" },
+    ];
+    const CAPS = [12000, 15000, 18000, 22000, 28000];
+    const draft = { stay: "homestay", travel: "volvo", cap: 18000 };
     const votes = {
       a: { R: "yes", A: "yes", M: "yes", K: "maybe", D: null, I: "yes" },
       b: { R: "maybe", A: "no", M: "yes", K: "yes", D: null, I: "maybe" },
@@ -961,20 +1013,45 @@
 
     function list() { return flow === 1 ? FLOW1 : FLOW2; }
     function current() { return list()[idx]; }
+    function stayOpt() { return STAYS.find(s => s.id === draft.stay); }
+    function travelOpt() { return TRAVELS.find(t => t.id === draft.travel); }
+    function tripCost() { return stayOpt().cost + travelOpt().cost + ACTIVITIES; }
+    function capGap() {
+      const diff = draft.cap - tripCost();
+      if (diff >= 0) return { cls: "ok", text: inr(diff) + " under your " + inr(draft.cap) + " cap" };
+      return { cls: "over", text: inr(-diff) + " over your " + inr(draft.cap) + " cap" };
+    }
+    function syncGroupBudgets() {
+      const cost = tripCost();
+      const lean = Math.max(8000, Math.round((cost - 3900) / 100) * 100);
+      const flex = Math.max(draft.cap, cost + 1600);
+      BUDGETS[0].amt = lean;
+      BUDGETS[0].title = inr(lean) + " pp";
+      BUDGETS[0].why = "Leaner stay · skip extras";
+      BUDGETS[1].amt = cost;
+      BUDGETS[1].title = inr(cost) + " pp";
+      BUDGETS[1].why = stayOpt().title + " · " + travelOpt().title;
+      BUDGETS[2].amt = flex;
+      BUDGETS[2].title = inr(flex) + " pp";
+      BUDGETS[2].why = flex === draft.cap ? "Your cap · room for the cafe in the clip" : "Headroom above the cart";
+    }
 
     function setFlow(n) {
       flow = n;
       idx = 0;
+      side = null;
       render();
     }
 
     function step(d) {
+      side = null;
       const L = list();
       idx = Math.max(0, Math.min(L.length - 1, idx + d));
       render();
     }
 
     function go(id) {
+      side = null;
       if (id.startsWith("f2")) flow = 2;
       if (id.startsWith("f1")) flow = 1;
       const L = list();
@@ -983,21 +1060,144 @@
       render();
     }
 
+    function openTweak() {
+      side = "f1-tweak";
+      render();
+    }
+
+    function closeTweak() {
+      side = null;
+      render();
+    }
+
+    function setDraft(key, value) {
+      draft[key] = value;
+      syncGroupBudgets();
+      initTweak();
+    }
+
+    function nudgeCap(delta) {
+      draft.cap = Math.max(8000, Math.min(40000, draft.cap + delta));
+      syncGroupBudgets();
+      initTweak();
+    }
+
     function mount(id, target) {
       const tpl = document.getElementById("tpl-" + id);
       target.innerHTML = "";
       target.appendChild(tpl.content.cloneNode(true));
     }
 
+    function dayBlock(n, title, detail) {
+      return `<div class="day"><div class="day-n">${n}</div><div class="day-body"><b>${title}</b><p>${detail}</p></div></div>`;
+    }
+
+    function planDaysHTML(compact) {
+      const t = travelOpt();
+      const s = stayOpt();
+      if (compact) {
+        return dayBlock("1", t.d1t, t.short + " · " + inr(t.cost) + " pp")
+          + dayBlock("2", "Manali → Kaza", t.d2 + " · " + s.line)
+          + dayBlock("3", "Key Monastery", "From the Reel · mapped")
+          + dayBlock("4", "Chandratal", "Day run · back to Kaza");
+      }
+      return dayBlock("DAY<br>1", t.d1t, t.d1d)
+        + dayBlock("DAY<br>2", "Manali → Kaza", t.d2 + " · " + s.line)
+        + dayBlock("DAY<br>3", "Key Monastery + Kaza", "The monastery from the Reel · cafe stop")
+        + dayBlock("DAY<br>4", "Chandratal", "Mapped lake · day run · back to Kaza")
+        + dayBlock("DAY<br>5–6", t.d5t, t.d5d);
+    }
+
+    function initPlan() {
+      const body = document.getElementById("plan-body");
+      if (!body) return;
+      const gap = capGap();
+      const t = travelOpt();
+      const s = stayOpt();
+      body.innerHTML = `
+        <div class="myra">Myra ✦</div>
+        <p style="font-size:13px;color:#4b5563;margin-bottom:12px">A 6-day loop that follows the Reel — ${t.short} in, Chandratal, Key, ${s.title}. Dates stay open so the group can vote.</p>
+        <div class="price-bar">
+          <div class="label">Live cart · per person</div>
+          <b>${inr(tripCost())}</b>
+          <div class="${gap.cls}">${gap.text}</div>
+        </div>
+        ${planDaysHTML(false)}`;
+    }
+
+    function pickCard(on, title, detail, amt, onclick) {
+      return `<div class="pick ${on ? "on" : ""}" onclick="${onclick}">
+        <div class="top"><b>${title}</b><span class="amt">${inr(amt)}</span></div>
+        <div class="detail">${detail}${on ? " · selected" : ""}</div>
+      </div>`;
+    }
+
+    function initTweak() {
+      const body = document.getElementById("tweak-body");
+      const cta = document.getElementById("tweak-cta");
+      if (!body) return;
+      const gap = capGap();
+      const s = stayOpt();
+      const t = travelOpt();
+      body.innerHTML = `
+        <p style="font-size:13px;color:#4b5563;margin-bottom:14px">Stays, travel, or budget — change any of them. Nothing here is locked to Myra’s first draft.</p>
+        <div class="label">Stays</div>
+        ${STAYS.map(o => pickCard(draft.stay === o.id, o.title, o.detail, o.cost, "setDraft('stay','" + o.id + "')")).join("")}
+        <div class="label" style="margin-top:12px">Travel</div>
+        ${TRAVELS.map(o => pickCard(draft.travel === o.id, o.title, o.detail, o.cost, "setDraft('travel','" + o.id + "')")).join("")}
+        <div class="label" style="margin-top:12px">Budget</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Your cap, separate from the cart. Raise or lower it whenever you want.</p>
+        <div class="cap-row">
+          ${CAPS.map(c => `<button class="cap-chip ${draft.cap === c ? "on" : ""}" onclick="setDraft('cap',${c})">${inr(c)}</button>`).join("")}
+        </div>
+        <div class="stepper">
+          <button type="button" onclick="nudgeCap(-1000)" aria-label="Lower budget">−</button>
+          <b>${inr(draft.cap)}</b>
+          <button type="button" onclick="nudgeCap(1000)" aria-label="Raise budget">+</button>
+        </div>
+        <div class="price-bar">
+          <div class="label">Live cart · per person</div>
+          <b>${inr(tripCost())}</b>
+          <div class="${gap.cls}">${gap.text}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">Stay ${inr(s.cost)} · Travel ${inr(t.cost)} · On-ground ${inr(ACTIVITIES)}</div>
+        </div>`;
+      cta.innerHTML = `<button class="cta" onclick="closeTweak()">UPDATE THE TRIP</button>`;
+    }
+
+    function paintDraft() {
+      const cost = inr(tripCost());
+      const cap = inr(draft.cap);
+      const t = travelOpt();
+      const s = stayOpt();
+      const share = document.getElementById("share-meta");
+      if (share) share.textContent = "6 people · dates unlocked · " + cap + " cap";
+      const wa = document.getElementById("wa-meta");
+      if (wa) wa.innerHTML = "6 friends · Jun–Sep window · " + cost + " pp<br>Vote on dates to lock the " + (t.id === "volvo" ? "Volvo" : "plan");
+      const joinCap = document.getElementById("join-cap");
+      if (joinCap) joinCap.textContent = cap;
+      const joinPlan = document.getElementById("join-plan");
+      if (joinPlan) joinPlan.textContent = "Spiti · 6 days · " + cost + " pp";
+      const doneSub = document.getElementById("done-sub");
+      if (doneSub) doneSub.textContent = "6 friends · 9–14 Oct · " + t.short + " + " + s.title;
+    }
+
     function render() {
       const s = current();
-      mount(s.id, document.getElementById("phone"));
+      const screenId = side || s.id;
+      mount(screenId, document.getElementById("phone"));
+      if (side) {
+        document.getElementById("label").textContent = `Flow ${flow} · ${idx+1}/${list().length} · Tweak stays, travel or budget`;
+        initTweak();
+        return;
+      }
       document.getElementById("label").textContent = `Flow ${flow} · ${idx+1}/${list().length} · ${s.title}`;
       if (location.hash !== "#" + s.id) history.replaceState(null, "", "#" + s.id);
       if (s.id === "f1-process") runProcess();
+      if (s.id === "f1-plan") initPlan();
       if (s.id === "f2-trip") initTrip();
       if (s.id === "f2-checkout") initCheckout();
       if (s.id === "f2-done") initDone();
+      paintDraft();
     }
 
     function runProcess() {
@@ -1076,10 +1276,7 @@
         const cap = winningBudget();
         return `
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">${locked && budgetLocked ? "Dates and cap locked. Cart is live." : "Inherited from the Reel. Dates and ₹ cap still need a vote."}</p>
-          <div class="day"><div class="day-n">1</div><div class="day-body"><b>Delhi → Manali Volvo</b><p>₹1,400 pp · overnight</p></div></div>
-          <div class="day"><div class="day-n">2</div><div class="day-body"><b>Manali → Kaza homestay</b><p>Shared tempo · 2 rooms</p></div></div>
-          <div class="day"><div class="day-n">3</div><div class="day-body"><b>Key Monastery</b><p>From the Reel · mapped</p></div></div>
-          <div class="day"><div class="day-n">4</div><div class="day-body"><b>Chandratal</b><p>Day run · back to Kaza</p></div></div>
+          ${planDaysHTML(true)}
           <div class="price-bar"><b>${inr(cap.amt)}</b> <span class="ok">pp · ${budgetLocked ? "group cap locked" : "leading vote"}</span></div>`;
       }
       if (tripPane === "chat") {
@@ -1093,13 +1290,13 @@
       }
       if (tripPane === "budget") {
         return `
-          <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Second bottleneck. Myra extracted ₹16,400. The group still has to agree a cap — this is the poll, not a 40-message fight.</p>
+          <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Second bottleneck. The cart is ${inr(tripCost())}. The group still has to agree a cap — this is the poll, not a 40-message fight.</p>
           ${BUDGETS.map(budgetCard).join("")}
           <p style="font-size:11px;color:var(--muted)">${budgetLocked ? "Cap locked at "+inr(winningBudget().amt)+" pp." : "Diya hasn’t voted. One tap, not another WhatsApp poll."}</p>`;
       }
       return `
         <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Myra suggested 3 windows from weather + cheapest Delhi departures. This is the bottleneck — not the hotel.</p>
-        ${dateCard("a","9–14 Oct · Fri–Wed","Best overlap · roads still open · Volvo ₹1,400", true)}
+        ${dateCard("a","9–14 Oct · Fri–Wed","Best overlap · roads still open · " + travelOpt().short, true)}
         ${dateCard("b","16–21 Oct · Fri–Wed","Shoulder week · fares +12% · 2 maybes", false)}
         ${dateCard("c","30 Oct–4 Nov · Fri–Wed","Colder nights · cheaper stays · weaker overlap", false)}
         <p style="font-size:11px;color:var(--muted)">${locked ? "Dates locked. Next: lock a per-person cap." : "Diya hasn’t voted. Nudge from the trip, not a separate chat."}</p>`;
@@ -1175,6 +1372,8 @@
       const body = document.getElementById("checkout-body");
       const cta = document.getElementById("checkout-cta");
       if (!body) return;
+      const t = travelOpt();
+      const stay = stayOpt();
       body.innerHTML = `
         <div class="tile" style="padding:0;overflow:hidden;margin-bottom:12px">
           <div style="height:96px;background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80') center/cover"></div>
@@ -1184,15 +1383,15 @@
             <div class="s">9–14 Oct · 6 travellers · Delhi origin</div>
           </div>
         </div>
-        <div class="day"><div class="day-n">1</div><div class="day-body"><b>Overnight Volvo</b><p>Delhi → Manali · ₹1,400</p></div></div>
-        <div class="day"><div class="day-n">2</div><div class="day-body"><b>Kaza homestay</b><p>5 nights · 2 rooms</p></div></div>
+        <div class="day"><div class="day-n">1</div><div class="day-body"><b>${t.title}</b><p>${t.d1t} · ${inr(t.cost)}</p></div></div>
+        <div class="day"><div class="day-n">2</div><div class="day-body"><b>${stay.title}</b><p>5 nights · ${inr(stay.cost)}</p></div></div>
         <div class="day"><div class="day-n">3</div><div class="day-body"><b>Key + Chandratal</b><p>Mapped from the Reel</p></div></div>
         <div class="price-bar">
           <div class="label">You pay now</div>
           <b>${inr(cap.amt)}</b>
           <div class="ok">Aarav’s share · group cap ${inr(cap.amt)}</div>
         </div>
-        <p style="font-size:11px;color:var(--muted)">Others pay their share from the same trip object. Hold on Volvo seats: 2 hours.</p>`;
+        <p style="font-size:11px;color:var(--muted)">Others pay their share from the same trip object. Hold on ${t.short} seats: 2 hours.</p>`;
       cta.innerHTML = `<button class="cta" onclick="go('f2-done')">PAY ${inr(cap.amt)}</button>`;
     }
 
@@ -1223,6 +1422,7 @@
       }
     })();
 
+    syncGroupBudgets();
     render();
   </script>
 </body>
