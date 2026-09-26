@@ -906,16 +906,11 @@
     <div class="screen mmt on">
       <div class="sb dark"><span>9:08</span><span class="sb-icons"><span class="sig"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:10px"></i></span> ⌒ <span class="bat"><b></b></span></span></div>
       <div class="mmt-head">
-        <div class="side" onclick="go('f2-join')">‹</div>
+        <div class="side" onclick="tripBack()">‹</div>
         <div>Riya’s Spiti</div>
         <div class="side">···</div>
       </div>
-      <div class="tabs">
-        <div class="tab on" data-tab="dates" onclick="tripTab('dates')">Dates</div>
-        <div class="tab" data-tab="budget" onclick="tripTab('budget')">Budget</div>
-        <div class="tab" data-tab="plan" onclick="tripTab('plan')">Plan</div>
-        <div class="tab" data-tab="chat" onclick="tripTab('chat')">Chat</div>
-      </div>
+      <div class="tabs" id="trip-tabs"></div>
       <div class="scroll" id="trip-body"></div>
       <div class="composer" id="trip-cta"></div>
     </div>
@@ -958,7 +953,7 @@
         </div>
       </div>
       <div class="composer">
-        <button class="cta" onclick="go('f2-trip')">BACK TO TRIP</button>
+        <button class="cta" onclick="backToTrip()">BACK TO TRIP</button>
       </div>
     </div>
   </template>
@@ -987,6 +982,7 @@
     let tripPane = "dates";
     let locked = false;
     let budgetLocked = false;
+    let booked = false;
     const ACTIVITIES = 6000;
     const STAYS = [
       { id: "hostel", title: "Dorm in Kaza", detail: "Shared bunk · skip the private room", cost: 3200, line: "Dorm check-in" },
@@ -1192,7 +1188,8 @@
         initTweak();
         return;
       }
-      document.getElementById("label").textContent = `Flow ${flow} · ${idx+1}/${list().length} · ${s.title}`;
+      const title = s.id === "f2-trip" && booked ? "Booked trip" : s.title;
+      document.getElementById("label").textContent = `Flow ${flow} · ${idx+1}/${list().length} · ${title}`;
       if (location.hash !== "#" + s.id) history.replaceState(null, "", "#" + s.id);
       if (s.id === "f1-process") runProcess();
       if (s.id === "f1-plan") initPlan();
@@ -1288,7 +1285,32 @@
           <div class="chat-sys">Aarav joined the trip</div>
           <div class="chat-row"><div class="av" style="background:#c45c26">M</div><div class="chat-b"><b>Meera</b>Parents said yes if we don’t self-drive the Rohtang stretch.</div></div>
           <div class="chat-row"><div class="av" style="background:#db2777">D</div><div class="chat-b"><b>Diya</b>Can we keep it under 15k? Hostel is fine, skip the ATV.</div></div>
-          <div class="chat-row"><div class="av" style="background:#0d7377">A</div><div class="chat-b"><b>You</b>Vote the cap in Budget — stop arguing it in chat.</div></div>`;
+          <div class="chat-row"><div class="av" style="background:#0d7377">A</div><div class="chat-b"><b>You</b>${booked ? "Paid my share. Booking MMT-SPITI-9182." : "Vote the cap in Budget — stop arguing it in chat."}</div></div>
+          ${booked ? `<div class="chat-sys">Trip booked · 9–14 Oct</div>` : ""}`;
+      }
+      if (tripPane === "summary") {
+        const cap = winningBudget();
+        const t = travelOpt();
+        const s = stayOpt();
+        return `
+          <div class="tile" style="padding:0;overflow:hidden;margin-bottom:12px">
+            <div style="height:110px;background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80') center/cover"></div>
+            <div style="padding:12px">
+              <div class="label">Booked</div>
+              <div class="v">Riya’s Spiti</div>
+              <div class="s">9–14 Oct · 6 friends · Delhi</div>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="tile"><div class="label">Booking ID</div><div class="v" style="font-size:14px">MMT-SPITI-9182</div></div>
+            <div class="tile"><div class="label">You paid</div><div class="v">${inr(cap.amt)}</div><div class="s">Aarav’s share</div></div>
+          </div>
+          <div class="tile" style="margin-top:10px">
+            <div class="label">Locked in</div>
+            <div class="v" style="font-size:14px">${s.title} · ${t.title}</div>
+            <div class="s">Dates and cap are closed. The group can still talk in chat.</div>
+          </div>
+          <div style="margin-top:12px">${planDaysHTML(true)}</div>`;
       }
       if (tripPane === "budget") {
         return `
@@ -1307,6 +1329,10 @@
     function canBook() { return locked && budgetLocked; }
 
     function tripCta() {
+      if (booked) {
+        if (tripPane === "chat") return `<div class="ask"><div class="ph">Message the trip</div></div>`;
+        return `<p style="text-align:center;font-size:13px;font-weight:700;color:#12805a;padding:6px 0 2px">Booked · MMT-SPITI-9182</p>`;
+      }
       const amt = inr(winningBudget().amt);
       if (tripPane === "dates") {
         if (!locked) return `<button class="cta" onclick="lockDates()">LOCK 9–14 OCT</button>`;
@@ -1325,18 +1351,44 @@
       return `<div class="ask"><div class="ph">Message the trip</div></div>`;
     }
 
+    function tripTabsHTML() {
+      if (booked) {
+        return `
+          <div class="tab ${tripPane === "summary" ? "on" : ""}" onclick="tripTab('summary')">Trip</div>
+          <div class="tab ${tripPane === "chat" ? "on" : ""}" onclick="tripTab('chat')">Chat</div>`;
+      }
+      return `
+        <div class="tab ${tripPane === "dates" ? "on" : ""}" onclick="tripTab('dates')">Dates</div>
+        <div class="tab ${tripPane === "budget" ? "on" : ""}" onclick="tripTab('budget')">Budget</div>
+        <div class="tab ${tripPane === "plan" ? "on" : ""}" onclick="tripTab('plan')">Plan</div>
+        <div class="tab ${tripPane === "chat" ? "on" : ""}" onclick="tripTab('chat')">Chat</div>`;
+    }
+
     function initTrip() {
       const body = document.getElementById("trip-body");
       const cta = document.getElementById("trip-cta");
+      const tabs = document.getElementById("trip-tabs");
       if (!body) return;
+      if (booked && tripPane !== "chat" && tripPane !== "summary") tripPane = "summary";
+      if (tabs) tabs.innerHTML = tripTabsHTML();
       body.innerHTML = tripHTML();
       cta.innerHTML = tripCta();
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === tripPane));
     }
 
     function tripTab(name) {
+      if (booked && name !== "chat") name = "summary";
       tripPane = name;
       initTrip();
+    }
+
+    function tripBack() {
+      go(booked ? "f2-done" : "f2-join");
+    }
+
+    function backToTrip() {
+      booked = true;
+      tripPane = "summary";
+      go("f2-trip");
     }
 
     function cast(opt, kind) {
@@ -1398,6 +1450,7 @@
     }
 
     function initDone() {
+      booked = true;
       const cap = winningBudget();
       const pp = document.getElementById("done-pp");
       const amt = document.getElementById("done-amt");
